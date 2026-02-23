@@ -1,0 +1,178 @@
+package com.hotelmanager.controller;
+
+import java.io.IOException;
+import java.time.Year;
+
+import com.hotelmanager.Main;
+import com.hotelmanager.dao.UserDAO;
+import com.hotelmanager.model.User;
+import com.hotelmanager.util.Logger;
+
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.StackPane;
+
+public class LoginController {
+    
+    @FXML
+    private TextField usernameField;
+    
+    @FXML
+    private PasswordField passwordField;
+    
+    @FXML
+    private TextField passwordTextField;
+    
+    @FXML
+    private Button togglePasswordVisibility;
+    
+    @FXML
+    private Label errorLabel;
+    
+    @FXML
+    private Label footerLabel;
+    
+    private UserDAO userDAO;
+    private static User currentUser;
+    private boolean passwordVisible = false;
+    
+    public LoginController() {
+        this.userDAO = new UserDAO();
+    }
+    
+    /**
+     * Initialize method called after FXML is loaded
+     * Check if admin exists, if not show registration
+     */
+    @FXML
+    public void initialize() {
+        // Set dynamic copyright year
+        int currentYear = Year.now().getValue();
+        footerLabel.setText("© " + currentYear + " Hotel Manager Pro");
+        
+        // Initialize toggle button with eye icon
+        togglePasswordVisibility.setText("👁");
+        
+        // Use Platform.runLater to ensure scene is initialized
+        javafx.application.Platform.runLater(this::checkAdminExists);
+    }
+    
+    /**
+     * Check if admin exists in the database
+     * If no admin exists, redirect to registration screen
+     */
+    private void checkAdminExists() {
+        try {
+            // Check if scene is ready
+            if (usernameField.getScene() == null) {
+                // Try again later
+                javafx.application.Platform.runLater(this::checkAdminExists);
+                return;
+            }
+            
+            boolean adminExists = userDAO.adminExists();
+            if (!adminExists) {
+                Logger.info("No admin found, redirecting to registration");
+                // Use Platform.runLater to ensure scene is fully loaded
+                javafx.application.Platform.runLater(this::navigateToRegistration);
+            }
+        } catch (Exception e) {
+            Logger.error("Error checking admin existence", e);
+        }
+    }
+    
+    /**
+     * Navigate to admin registration screen (called from FXML)
+     */
+    @FXML
+    public void navigateToRegistration() {
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/fxml/register.fxml"));
+            Parent registerRoot = loader.load();
+            
+            // Get the current scene root (StackPane)
+            StackPane root = (StackPane) usernameField.getScene().getRoot();
+            root.getChildren().clear();
+            root.getChildren().add(registerRoot);
+            
+        } catch (IOException e) {
+            Logger.error("Error navigating to registration", e);
+        }
+    }
+    
+    @FXML
+    private void handleLogin() {
+        // Get password from whichever field is visible
+        String password = passwordVisible ? passwordTextField.getText() : passwordField.getText();
+        
+        String username = usernameField.getText().trim();
+        
+        if (username.isEmpty() || password.isEmpty()) {
+            showError("Please enter username and password");
+            return;
+        }
+        
+        try {
+            User user = userDAO.authenticate(username, password);
+            if (user != null) {
+                currentUser = user;
+                Logger.info("User logged in: " + username);
+                navigateToDashboard();
+            } else {
+                showError("Invalid username or password");
+                Logger.warn("Failed login attempt for username: " + username);
+            }
+        } catch (Exception e) {
+            showError("Login failed: " + e.getMessage());
+            Logger.error("Login error", e);
+        }
+    }
+    
+    /**
+     * Toggle password visibility between hidden and visible
+     */
+    @FXML
+    private void togglePasswordVisibility() {
+        if (passwordVisible) {
+            // Hide password - show PasswordField, hide TextField
+            passwordField.setText(passwordTextField.getText());
+            passwordField.setVisible(true);
+            passwordTextField.setVisible(false);
+            passwordVisible = false;
+            togglePasswordVisibility.setText("👁");
+        } else {
+            // Show password - show TextField with password text
+            passwordTextField.setText(passwordField.getText());
+            passwordTextField.setVisible(true);
+            passwordField.setVisible(false);
+            passwordVisible = true;
+            togglePasswordVisibility.setText("🙈");
+        }
+    }
+    
+    private void showError(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+    }
+    
+    private void navigateToDashboard() throws IOException {
+        Main.switchScene("dashboard", 1200, 800, "Hotel Manager Pro - Dashboard", true);
+    }
+    
+    public static User getCurrentUser() {
+        return currentUser;
+    }
+    
+    public static void logout() {
+        if (currentUser != null) {
+            Logger.info("User logged out: " + currentUser.getUsername());
+        }
+        currentUser = null;
+    }
+}

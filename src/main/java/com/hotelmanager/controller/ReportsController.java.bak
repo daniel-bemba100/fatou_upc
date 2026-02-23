@@ -1,0 +1,196 @@
+package com.hotelmanager.controller;
+
+import com.hotelmanager.Main;
+import com.hotelmanager.dao.PaymentDAO;
+import com.hotelmanager.dao.ReservationDAO;
+import com.hotelmanager.dao.RoomDAO;
+import com.hotelmanager.util.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class ReportsController {
+    
+    @FXML
+    private ComboBox<String> reportTypeCombo;
+    
+    @FXML
+    private DatePicker startDatePicker;
+    
+    @FXML
+    private DatePicker endDatePicker;
+    
+    @FXML
+    private TableView<ReportRow> reportTable;
+    
+    private RoomDAO roomDAO;
+    private ReservationDAO reservationDAO;
+    private PaymentDAO paymentDAO;
+    private ObservableList<ReportRow> reportData;
+    
+    public ReportsController() {
+        this.roomDAO = new RoomDAO();
+        this.reservationDAO = new ReservationDAO();
+        this.paymentDAO = new PaymentDAO();
+        this.reportData = FXCollections.observableArrayList();
+    }
+    
+    @FXML
+    public void initialize() {
+        reportTypeCombo.setItems(FXCollections.observableArrayList(
+            "Occupancy Report", "Revenue Report", "Reservation Summary"
+        ));
+        
+        // Set default dates
+        startDatePicker.setValue(LocalDate.now().minusMonths(1));
+        endDatePicker.setValue(LocalDate.now());
+        
+        // Setup table
+        TableColumn<ReportRow, String> itemCol = new TableColumn<>("Item");
+        itemCol.setCellValueFactory(p -> p.getValue().itemProperty());
+        itemCol.setPrefWidth(200);
+        
+        TableColumn<ReportRow, String> valueCol = new TableColumn<>("Value");
+        valueCol.setCellValueFactory(p -> p.getValue().valueProperty());
+        valueCol.setPrefWidth(200);
+        
+        reportTable.getColumns().addAll(itemCol, valueCol);
+    }
+    
+    @FXML
+    private void generateReport() {
+        String reportType = reportTypeCombo.getValue();
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
+        
+        if (reportType == null || startDate == null || endDate == null) {
+            showAlert("Validation Error", "Please select report type and date range");
+            return;
+        }
+        
+        if (endDate.isBefore(startDate)) {
+            showAlert("Validation Error", "End date must be after start date");
+            return;
+        }
+        
+        reportData.clear();
+        
+        try {
+            switch (reportType) {
+                case "Occupancy Report":
+                    generateOccupancyReport(startDate, endDate);
+                    break;
+                case "Revenue Report":
+                    generateRevenueReport(startDate, endDate);
+                    break;
+                case "Reservation Summary":
+                    generateReservationSummary(startDate, endDate);
+                    break;
+            }
+            reportTable.setItems(reportData);
+            showAlert("Success", "Report generated successfully");
+        } catch (Exception e) {
+            Logger.error("Error generating report", e);
+            showAlert("Error", "Failed to generate report: " + e.getMessage());
+        }
+    }
+    
+    private void generateOccupancyReport(LocalDate startDate, LocalDate endDate) throws Exception {
+        reportData.add(new ReportRow("Report Type", "Occupancy Report"));
+        reportData.add(new ReportRow("Start Date", startDate.toString()));
+        reportData.add(new ReportRow("End Date", endDate.toString()));
+        
+        int totalRooms = roomDAO.findAll().size();
+        int availableRooms = roomDAO.findByStatus(com.hotelmanager.model.RoomStatus.AVAILABLE).size();
+        int occupiedRooms = roomDAO.findByStatus(com.hotelmanager.model.RoomStatus.OCCUPIED).size();
+        
+        reportData.add(new ReportRow("Total Rooms", String.valueOf(totalRooms)));
+        reportData.add(new ReportRow("Available Rooms", String.valueOf(availableRooms)));
+        reportData.add(new ReportRow("Occupied Rooms", String.valueOf(occupiedRooms)));
+        
+        double occupancyRate = totalRooms > 0 ? (double) occupiedRooms / totalRooms * 100 : 0;
+        reportData.add(new ReportRow("Occupancy Rate", String.format("%.2f%%", occupancyRate)));
+    }
+    
+    private void generateRevenueReport(LocalDate startDate, LocalDate endDate) throws Exception {
+        reportData.add(new ReportRow("Report Type", "Revenue Report"));
+        reportData.add(new ReportRow("Start Date", startDate.toString()));
+        reportData.add(new ReportRow("End Date", endDate.toString()));
+        
+        double totalRevenue = paymentDAO.getTotalRevenueByDateRange(startDate, endDate);
+        reportData.add(new ReportRow("Total Revenue", String.format("$%.2f", totalRevenue)));
+        
+        int reservationCount = reservationDAO.findByDateRange(startDate, endDate).size();
+        reportData.add(new ReportRow("Total Reservations", String.valueOf(reservationCount)));
+        
+        double avgRevenue = reservationCount > 0 ? totalRevenue / reservationCount : 0;
+        reportData.add(new ReportRow("Average Revenue/Reservation", String.format("$%.2f", avgRevenue)));
+    }
+    
+    private void generateReservationSummary(LocalDate startDate, LocalDate endDate) throws Exception {
+        reportData.add(new ReportRow("Report Type", "Reservation Summary"));
+        reportData.add(new ReportRow("Start Date", startDate.toString()));
+        reportData.add(new ReportRow("End Date", endDate.toString()));
+        
+        List<com.hotelmanager.model.Reservation> reservations = reservationDAO.findByDateRange(startDate, endDate);
+        reportData.add(new ReportRow("Total Reservations", String.valueOf(reservations.size())));
+        
+        long pending = reservations.stream().filter(r -> "PENDING".equals(r.getStatusCode())).count();
+        long confirmed = reservations.stream().filter(r -> "CONFIRMED".equals(r.getStatusCode())).count();
+        long checkedIn = reservations.stream().filter(r -> "CHECKED_IN".equals(r.getStatusCode())).count();
+        long checkedOut = reservations.stream().filter(r -> "CHECKED_OUT".equals(r.getStatusCode())).count();
+        
+        reportData.add(new ReportRow("Pending", String.valueOf(pending)));
+        reportData.add(new ReportRow("Confirmed", String.valueOf(confirmed)));
+        reportData.add(new ReportRow("Checked In", String.valueOf(checkedIn)));
+        reportData.add(new ReportRow("Checked Out", String.valueOf(checkedOut)));
+    }
+    
+    @FXML
+    private void exportToPDF() {
+        showAlert("Export", "PDF export feature coming soon!");
+    }
+    
+    @FXML
+    private void exportToExcel() {
+        showAlert("Export", "Excel export feature coming soon!");
+    }
+    
+    @FXML
+    private void goToDashboard() throws IOException {
+        Main.switchScene("dashboard", 1200, 800, "Hotel Manager Pro - Dashboard", true);
+    }
+    
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    
+    // Inner class for table data
+    public static class ReportRow {
+        private final javafx.beans.property.SimpleStringProperty item;
+        private final javafx.beans.property.SimpleStringProperty value;
+        
+        public ReportRow(String item, String value) {
+            this.item = new javafx.beans.property.SimpleStringProperty(item);
+            this.value = new javafx.beans.property.SimpleStringProperty(value);
+        }
+        
+        public javafx.beans.property.StringProperty itemProperty() {
+            return item;
+        }
+        
+        public javafx.beans.property.StringProperty valueProperty() {
+            return value;
+        }
+    }
+}

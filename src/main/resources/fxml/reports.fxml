@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.hotelmanager.controller.ReportsController">
+    
+    <top>
+        <HBox style="-fx-background-color: #2C3E50; -fx-padding: 15 20;">
+            <Label text="Reports" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Back to Dashboard" styleClass="btn, btn-secondary" onAction="#goToDashboard"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+            <!-- Report Options -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="Generate Report" styleClass="card-title"/>
+                <HBox spacing="15">
+                    <VBox spacing="5">
+                        <Label text="Report Type"/>
+                        <ComboBox fx:id="reportTypeCombo" promptText="Select Type" prefWidth="180"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Start Date"/>
+                        <DatePicker fx:id="startDatePicker" prefWidth="140"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="End Date"/>
+                        <DatePicker fx:id="endDatePicker" prefWidth="140"/>
+                    </VBox>
+                    <Button text="Generate" styleClass="btn, btn-primary" onAction="#generateReport"/>
+                </HBox>
+            </VBox>
+            
+            <!-- Export Options -->
+            <HBox spacing="15">
+                <Button text="Export to PDF" styleClass="btn, btn-secondary" onAction="#exportToPDF"/>
+                <Button text="Export to Excel" styleClass="btn, btn-secondary" onAction="#exportToExcel"/>
+            </HBox>
+            
+            <!-- Report Results -->
+            <VBox VBox.vgrow="ALWAYS">
+                <Label text="Report Results" styleClass="card-title"/>
+                <TableView fx:id="reportTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn text="Item" prefWidth="200"/>
+                        <TableColumn text="Value" prefWidth="200"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

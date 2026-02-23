@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.hotelmanager.controller.PaymentsController">
+    
+    <top>
+        <HBox style="-fx-background-color: #2C3E50; -fx-padding: 15 20;">
+            <Label text="Payment Management" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Back to Dashboard" styleClass="btn, btn-secondary" onAction="#goToDashboard"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+            <!-- Total Revenue Card -->
+            <HBox spacing="20">
+                <VBox styleClass="stat-card" prefWidth="250">
+                    <Label text="Total Revenue" styleClass="stat-label"/>
+                    <Label fx:id="totalRevenueLabel" text="$0.00" styleClass="stat-value"/>
+                </VBox>
+                <VBox styleClass="stat-card" prefWidth="250">
+                    <Label text="Pending Payments" styleClass="stat-label"/>
+                    <Label fx:id="pendingPaymentsLabel" text="0" styleClass="stat-value"/>
+                </VBox>
+            </HBox>
+            
+            <!-- Add Payment Form -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="Record New Payment" styleClass="card-title"/>
+                <HBox spacing="15">
+                    <VBox spacing="5">
+                        <Label text="Reservation ID"/>
+                        <TextField fx:id="reservationIdField" promptText="Reservation ID" prefWidth="120"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Amount"/>
+                        <TextField fx:id="amountField" promptText="0.00" prefWidth="120"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Payment Method"/>
+                        <ComboBox fx:id="paymentMethodCombo" promptText="Select Method" prefWidth="150"/>
+                    </VBox>
+                    <Button text="Record Payment" styleClass="btn, btn-primary" onAction="#recordPayment"/>
+                </HBox>
+            </VBox>
+            
+            <!-- Payment List -->
+            <VBox VBox.vgrow="ALWAYS">
+                <Label text="Payment History" styleClass="card-title"/>
+                <TableView fx:id="paymentsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn text="ID" prefWidth="50"/>
+                        <TableColumn text="Reservation ID" prefWidth="120"/>
+                        <TableColumn text="Amount" prefWidth="100"/>
+                        <TableColumn text="Method" prefWidth="120"/>
+                        <TableColumn text="Status" prefWidth="100"/>
+                        <TableColumn text="Transaction ID" prefWidth="150"/>
+                        <TableColumn text="Date" prefWidth="150"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

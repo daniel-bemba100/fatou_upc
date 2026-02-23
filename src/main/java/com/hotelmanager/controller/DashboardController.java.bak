@@ -1,0 +1,131 @@
+package com.hotelmanager.controller;
+
+import com.hotelmanager.Main;
+import com.hotelmanager.dao.PaymentDAO;
+import com.hotelmanager.dao.ReservationDAO;
+import com.hotelmanager.dao.RoomDAO;
+import com.hotelmanager.model.Reservation;
+import com.hotelmanager.model.Room;
+import com.hotelmanager.model.User;
+import com.hotelmanager.util.Logger;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
+import java.io.IOException;
+import java.util.List;
+
+public class DashboardController {
+    
+    @FXML
+    private Label userLabel;
+    
+    @FXML
+    private Label availableRoomsLabel;
+    
+    @FXML
+    private Label totalReservationsLabel;
+    
+    @FXML
+    private Label checkedInLabel;
+    
+    @FXML
+    private Label revenueLabel;
+    
+    @FXML
+    private TableView<Reservation> recentReservationsTable;
+    
+    private RoomDAO roomDAO;
+    private ReservationDAO reservationDAO;
+    private PaymentDAO paymentDAO;
+    
+    public DashboardController() {
+        this.roomDAO = new RoomDAO();
+        this.reservationDAO = new ReservationDAO();
+        this.paymentDAO = new PaymentDAO();
+    }
+    
+    @FXML
+    public void initialize() {
+        User user = LoginController.getCurrentUser();
+        if (user != null) {
+            userLabel.setText("Welcome, " + user.getFullName());
+        }
+        loadDashboardStats();
+    }
+    
+    private void loadDashboardStats() {
+        try {
+            // Load available rooms count
+            List<Room> availableRooms = roomDAO.findByStatus(com.hotelmanager.model.RoomStatus.AVAILABLE);
+            availableRoomsLabel.setText(String.valueOf(availableRooms.size()));
+            
+            // Load total reservations
+            List<Reservation> allReservations = reservationDAO.findAll();
+            totalReservationsLabel.setText(String.valueOf(allReservations.size()));
+            
+            // Load checked in guests
+            List<Reservation> checkedIn = reservationDAO.findByStatus(com.hotelmanager.model.ReservationStatus.CHECKED_IN);
+            checkedInLabel.setText(String.valueOf(checkedIn.size()));
+            
+            // Load total revenue
+            double revenue = paymentDAO.getTotalRevenue();
+            revenueLabel.setText("$" + String.format("%.2f", revenue));
+            
+            // Load recent reservations
+            List<Reservation> recent = reservationDAO.findActiveReservations();
+            if (recent.size() > 10) {
+                recent = recent.subList(0, 10);
+            }
+            recentReservationsTable.getItems().setAll(recent);
+            
+            Logger.info("Dashboard stats loaded successfully");
+        } catch (Exception e) {
+            Logger.error("Error loading dashboard stats", e);
+        }
+    }
+    
+    @FXML
+    private void handleLogout() {
+        LoginController.logout();
+        try {
+            Main.switchScene("login", 400, 500, "Hotel Manager Pro - Login", false);
+        } catch (IOException e) {
+            Logger.error("Error logging out", e);
+        }
+    }
+    
+    @FXML
+    private void showDashboard() {
+        loadDashboardStats();
+    }
+    
+    @FXML
+    private void showRooms() throws IOException {
+        Main.switchScene("rooms", 1000, 700, "Room Management", true);
+    }
+    
+    @FXML
+    private void showReservations() throws IOException {
+        Main.switchScene("reservations", 1000, 700, "Reservation Management", true);
+    }
+    
+    @FXML
+    private void showCustomers() throws IOException {
+        Main.switchScene("customers", 1000, 700, "Customer Management", true);
+    }
+    
+    @FXML
+    private void showPayments() throws IOException {
+        Main.switchScene("payments", 1000, 700, "Payment Management", true);
+    }
+    
+    @FXML
+    private void showReports() throws IOException {
+        Main.switchScene("reports", 1000, 700, "Reports", true);
+    }
+    
+    @FXML
+    private void showSettings() throws IOException {
+        Main.switchScene("settings", 800, 600, "Settings", true);
+    }
+}

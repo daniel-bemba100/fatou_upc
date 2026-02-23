@@ -1,0 +1,114 @@
+package com.hotelmanager.controller;
+
+import java.io.IOException;
+
+import com.hotelmanager.Main;
+import com.hotelmanager.util.DBConnection;
+import com.hotelmanager.util.Logger;
+
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+
+public class SettingsController {
+    
+    @FXML
+    private ToggleButton darkModeToggle;
+    
+    @FXML
+    private ComboBox<String> languageCombo;
+    
+    @FXML
+    private ComboBox<String> dbTypeCombo;
+    
+    @FXML
+    private TextField hostField;
+    
+    @FXML
+    private TextField portField;
+    
+    @FXML
+    private TextField databaseField;
+    
+    @FXML
+    private TextField dbUserField;
+    
+    @FXML
+    private PasswordField dbPassField;
+    
+    private boolean isDarkMode = false;
+    
+    @FXML
+    public void initialize() {
+        languageCombo.setItems(FXCollections.observableArrayList(
+            "English", "French", "Spanish"
+        ));
+        languageCombo.setValue("English");
+        
+        // Initialize database type combo
+        dbTypeCombo.setItems(FXCollections.observableArrayList(
+            "MySQL", "MariaDB"
+        ));
+        dbTypeCombo.setValue("MariaDB"); // Default to MariaDB
+    }
+    
+    @FXML
+    private void toggleDarkMode() {
+        isDarkMode = !isDarkMode;
+        darkModeToggle.setText(isDarkMode ? "On" : "Off");
+        
+        // Toggle CSS class for dark mode
+        if (isDarkMode) {
+            Logger.info("Dark mode enabled");
+        } else {
+            Logger.info("Dark mode disabled");
+        }
+    }
+    
+    @FXML
+    private void changeLanguage() {
+        String selected = languageCombo.getValue();
+        Logger.info("Language changed to: " + selected);
+        showAlert("Language Changed", "Language changed to " + selected + ". Some changes may require restart.");
+    }
+    
+    @FXML
+    private void testConnection() {
+        String host = hostField.getText();
+        String port = portField.getText();
+        String database = databaseField.getText();
+        String username = dbUserField.getText();
+        String password = dbPassField.getText();
+        String dbType = dbTypeCombo.getValue().toLowerCase();
+        
+        try {
+            boolean connected = DBConnection.getInstance().testConnection(host, port, database, username, password, dbType);
+            if (connected) {
+                showAlert("Success", "Database connection successful!");
+                Logger.info("Database connection test successful");
+            } else {
+                showAlert("Error", "Database connection failed!");
+            }
+        } catch (Exception e) {
+            showAlert("Error", "Connection test failed: " + e.getMessage());
+            Logger.error("Database connection test failed", e);
+        }
+    }
+    
+    @FXML
+    private void goToDashboard() throws IOException {
+        Main.switchScene("dashboard", 1200, 800, "Hotel Manager Pro - Dashboard", true);
+    }
+    
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+}

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.hotelmanager.controller.RoomsController">
+    
+    <top>
+        <HBox style="-fx-background-color: #2C3E50; -fx-padding: 15 20;" BorderPane.alignment="CENTER">
+            <Label text="Room Management" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Back to Dashboard" styleClass="btn, btn-secondary" onAction="#goToDashboard"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+            <!-- Add Room Form -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="Add New Room" styleClass="card-title"/>
+                <HBox spacing="15">
+                    <VBox spacing="5">
+                        <Label text="Room Number"/>
+                        <TextField fx:id="roomNumberField" promptText="e.g., 101" prefWidth="120"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Floor"/>
+                        <TextField fx:id="floorField" promptText="e.g., 1" prefWidth="80"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Room Type"/>
+                        <ComboBox fx:id="roomTypeCombo" promptText="Select Type" prefWidth="150"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Status"/>
+                        <ComboBox fx:id="statusCombo" promptText="Select Status" prefWidth="130"/>
+                    </VBox>
+                    <Button text="Add Room" styleClass="btn, btn-primary" onAction="#addRoom" 
+                            style="-fx-alignment: CENTER_LEFT;"/>
+                </HBox>
+            </VBox>
+            
+            <!-- Room List -->
+            <VBox VBox.vgrow="ALWAYS">
+                <Label text="Room List" styleClass="card-title"/>
+                <TableView fx:id="roomsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn text="ID" prefWidth="50"/>
+                        <TableColumn text="Room Number" prefWidth="120"/>
+                        <TableColumn text="Floor" prefWidth="80"/>
+                        <TableColumn text="Room Type" prefWidth="150"/>
+                        <TableColumn text="Status" prefWidth="120"/>
+                        <TableColumn text="Description" prefWidth="200"/>
+                        <TableColumn text="Actions" prefWidth="150"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

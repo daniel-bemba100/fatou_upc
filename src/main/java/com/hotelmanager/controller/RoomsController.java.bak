@@ -1,0 +1,149 @@
+package com.hotelmanager.controller;
+
+import com.hotelmanager.Main;
+import com.hotelmanager.dao.RoomDAO;
+import com.hotelmanager.dao.RoomTypeDAO;
+import com.hotelmanager.model.Room;
+import com.hotelmanager.model.RoomStatus;
+import com.hotelmanager.model.RoomType;
+import com.hotelmanager.util.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import java.io.IOException;
+import java.util.List;
+
+public class RoomsController {
+    
+    @FXML
+    private TextField roomNumberField;
+    
+    @FXML
+    private TextField floorField;
+    
+    @FXML
+    private ComboBox<RoomType> roomTypeCombo;
+    
+    @FXML
+    private ComboBox<RoomStatus> statusCombo;
+    
+    @FXML
+    private TableView<Room> roomsTable;
+    
+    private RoomDAO roomDAO;
+    private RoomTypeDAO roomTypeDAO;
+    private ObservableList<Room> roomList;
+    
+    public RoomsController() {
+        this.roomDAO = new RoomDAO();
+        this.roomTypeDAO = new RoomTypeDAO();
+        this.roomList = FXCollections.observableArrayList();
+    }
+    
+    @FXML
+    public void initialize() {
+        loadRoomTypes();
+        loadStatuses();
+        loadRooms();
+        setupTableColumns();
+    }
+    
+    private void loadRoomTypes() {
+        try {
+            List<RoomType> types = roomTypeDAO.findAll();
+            roomTypeCombo.setItems(FXCollections.observableArrayList(types));
+        } catch (Exception e) {
+            Logger.error("Error loading room types", e);
+        }
+    }
+    
+    private void loadStatuses() {
+        statusCombo.setItems(FXCollections.observableArrayList(RoomStatus.values()));
+    }
+    
+    private void setupTableColumns() {
+        roomsTable.getColumns().clear();
+        roomsTable.getColumns().addAll(
+            createColumn("ID", "id", 50),
+            createColumn("Room Number", "roomNumber", 100),
+            createColumn("Floor", "floor", 80),
+            createColumn("Room Type ID", "roomTypeId", 100),
+            createColumn("Status", "statusCode", 100)
+        );
+    }
+    
+    private TableColumn<Room, ?> createColumn(String title, String property, int width) {
+        TableColumn<Room, ?> col = new TableColumn<>(title);
+        col.setCellValueFactory(new PropertyValueFactory<>(property));
+        col.setPrefWidth(width);
+        return col;
+    }
+    
+    private void loadRooms() {
+        try {
+            List<Room> rooms = roomDAO.findAll();
+            roomList.setAll(rooms);
+            roomsTable.setItems(roomList);
+        } catch (Exception e) {
+            Logger.error("Error loading rooms", e);
+            showAlert("Error", "Failed to load rooms: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void addRoom() {
+        String roomNumber = roomNumberField.getText().trim();
+        String floorStr = floorField.getText().trim();
+        
+        if (roomNumber.isEmpty() || floorStr.isEmpty()) {
+            showAlert("Validation Error", "Please fill in all fields");
+            return;
+        }
+        
+        try {
+            int floor = Integer.parseInt(floorStr);
+            RoomType selectedType = roomTypeCombo.getValue();
+            RoomStatus selectedStatus = statusCombo.getValue();
+            
+            if (selectedType == null || selectedStatus == null) {
+                showAlert("Validation Error", "Please select room type and status");
+                return;
+            }
+            
+            Room room = new Room();
+            room.setRoomNumber(roomNumber);
+            room.setFloor(floor);
+            room.setRoomTypeId(selectedType.getId());
+            room.setStatusCode(selectedStatus.getCode());
+            
+            roomDAO.insert(room);
+            Logger.info("Room added: " + roomNumber);
+            
+            roomNumberField.clear();
+            floorField.clear();
+            roomTypeCombo.getSelectionModel().clearSelection();
+            statusCombo.getSelectionModel().clearSelection();
+            
+            loadRooms();
+            showAlert("Success", "Room added successfully");
+        } catch (Exception e) {
+            Logger.error("Error adding room", e);
+            showAlert("Error", "Failed to add room: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void goToDashboard() throws IOException {
+        Main.switchScene("dashboard", 1200, 800, "Hotel Manager Pro - Dashboard", true);
+    }
+    
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+}

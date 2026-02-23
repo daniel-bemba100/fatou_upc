@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.hotelmanager.controller.DashboardController">
+    
+    <!-- Top Header -->
+    <top>
+        <HBox styleClass="header" style="-fx-background-color: #2C3E50; -fx-padding: 15 20;">
+            <Label text="Hotel Manager Pro" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="userLabel" text="Welcome, User" style="-fx-text-fill: white;"/>
+            <Button text="Logout" styleClass="btn, btn-secondary" style="-fx-margin-left: 10;" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+    
+    <!-- Left Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" spacing="5">
+            <Button text="Dashboard" styleClass="sidebar-item" onAction="#showDashboard" prefWidth="220"/>
+            <Button text="Rooms" styleClass="sidebar-item" onAction="#showRooms" prefWidth="220"/>
+            <Button text="Reservations" styleClass="sidebar-item" onAction="#showReservations" prefWidth="220"/>
+            <Button text="Customers" styleClass="sidebar-item" onAction="#showCustomers" prefWidth="220"/>
+            <Button text="Payments" styleClass="sidebar-item" onAction="#showPayments" prefWidth="220"/>
+            <Button text="Reports" styleClass="sidebar-item" onAction="#showReports" prefWidth="220"/>
+            <Button text="Settings" styleClass="sidebar-item" onAction="#showSettings" prefWidth="220"/>
+        </VBox>
+    </left>
+    
+    <!-- Main Content -->
+    <center>
+        <StackPane fx:id="contentArea" styleClass="dashboard-container">
+            <!-- Dashboard Content (Default) -->
+            <VBox fx:id="dashboardContent" spacing="20" visible="true">
+                <Label text="Dashboard Overview" styleClass="card-title" style="-fx-font-size: 24px;"/>
+                
+                <!-- Stats Cards -->
+                <HBox spacing="20">
+                    <!-- Rooms Available -->
+                    <VBox styleClass="stat-card">
+                        <Label fx:id="availableRoomsLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Available Rooms" styleClass="stat-label"/>
+                    </VBox>
+                    
+                    <!-- Total Reservations -->
+                    <VBox styleClass="stat-card">
+                        <Label fx:id="totalReservationsLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Total Reservations" styleClass="stat-label"/>
+                    </VBox>
+                    
+                    <!-- Checked In -->
+                    <VBox styleClass="stat-card">
+                        <Label fx:id="checkedInLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Guests Checked In" styleClass="stat-label"/>
+                    </VBox>
+                    
+                    <!-- Revenue -->
+                    <VBox styleClass="stat-card">
+                        <Label fx:id="revenueLabel" text="$0" styleClass="stat-value"/>
+                        <Label text="Total Revenue" styleClass="stat-label"/>
+                    </VBox>
+                </HBox>
+                
+                <!-- Recent Reservations -->
+                <VBox styleClass="card" VBox.vgrow="ALWAYS">
+                    <Label text="Recent Reservations" styleClass="card-title"/>
+                    <TableView fx:id="recentReservationsTable" prefHeight="300">
+                        <columns>
+                            <TableColumn text="ID" prefWidth="50"/>
+                            <TableColumn text="Customer" prefWidth="150"/>
+                            <TableColumn text="Room" prefWidth="80"/>
+                            <TableColumn text="Check-In" prefWidth="100"/>
+                            <TableColumn text="Check-Out" prefWidth="100"/>
+                            <TableColumn text="Status" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

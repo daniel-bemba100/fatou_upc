@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.hotelmanager.controller.SettingsController">
+    
+    <top>
+        <HBox style="-fx-background-color: #2C3E50; -fx-padding: 15 20;">
+            <Label text="Settings" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Back to Dashboard" styleClass="btn, btn-secondary" onAction="#goToDashboard"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+            <!-- Appearance -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="Appearance" styleClass="card-title"/>
+                <HBox spacing="15">
+                    <Label text="Dark Mode:"/>
+                    <ToggleButton fx:id="darkModeToggle" text="Off" onAction="#toggleDarkMode"/>
+                </HBox>
+            </VBox>
+            
+            <!-- Language -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="Language" styleClass="card-title"/>
+                <HBox spacing="15">
+                    <Label text="Select Language:"/>
+                    <ComboBox fx:id="languageCombo" onAction="#changeLanguage" prefWidth="150"/>
+                </HBox>
+            </VBox>
+            
+            <!-- Database -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="Database Connection" styleClass="card-title"/>
+                <VBox spacing="10">
+                    <HBox spacing="10">
+                        <Label text="Database Type:" prefWidth="100"/>
+                        <ComboBox fx:id="dbTypeCombo" prefWidth="200"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Host:" prefWidth="100"/>
+                        <TextField fx:id="hostField" text="localhost" prefWidth="200"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Port:" prefWidth="100"/>
+                        <TextField fx:id="portField" text="3306" prefWidth="200"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Database:" prefWidth="100"/>
+                        <TextField fx:id="databaseField" text="hotel_manager_db" prefWidth="200"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Username:" prefWidth="100"/>
+                        <TextField fx:id="dbUserField" text="root" prefWidth="200"/>
+                    </HBox>
+                    <HBox spacing="10">
+                        <Label text="Password:" prefWidth="100"/>
+                        <PasswordField fx:id="dbPassField" prefWidth="200"/>
+                    </HBox>
+                    <Button text="Test Connection" styleClass="btn, btn-secondary" onAction="#testConnection"/>
+                </VBox>
+            </VBox>
+            
+            <!-- About -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="About" styleClass="card-title"/>
+                <Label text="Hotel Manager Pro v1.0"/>
+                <Label text="A comprehensive hotel management system"/>
+                <Label text="© 2024 Hotel Manager Pro"/>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

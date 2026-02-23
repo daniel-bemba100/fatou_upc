@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.hotelmanager.controller.ReservationsController">
+    
+    <top>
+        <HBox style="-fx-background-color: #2C3E50; -fx-padding: 15 20;">
+            <Label text="Reservation Management" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Back to Dashboard" styleClass="btn, btn-secondary" onAction="#goToDashboard"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+            <!-- Add Reservation Form -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="Create New Reservation" styleClass="card-title"/>
+                <HBox spacing="15">
+                    <VBox spacing="5">
+                        <Label text="Customer ID"/>
+                        <TextField fx:id="customerIdField" promptText="Customer ID" prefWidth="100"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Room ID"/>
+                        <TextField fx:id="roomIdField" promptText="Room ID" prefWidth="80"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Check-In"/>
+                        <DatePicker fx:id="checkInPicker" prefWidth="130"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Check-Out"/>
+                        <DatePicker fx:id="checkOutPicker" prefWidth="130"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Guests"/>
+                        <TextField fx:id="guestsField" promptText="1" prefWidth="60"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="15">
+                    <VBox spacing="5">
+                        <Label text="Total Amount"/>
+                        <TextField fx:id="amountField" promptText="0.00" prefWidth="100"/>
+                    </VBox>
+                    <Button text="Create Reservation" styleClass="btn, btn-primary" onAction="#createReservation" 
+                            style="-fx-alignment: CENTER_LEFT;"/>
+                </HBox>
+            </VBox>
+            
+            <!-- Reservation List -->
+            <VBox VBox.vgrow="ALWAYS">
+                <Label text="Reservations" styleClass="card-title"/>
+                <TableView fx:id="reservationsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn text="ID" prefWidth="50"/>
+                        <TableColumn text="Customer ID" prefWidth="100"/>
+                        <TableColumn text="Room ID" prefWidth="80"/>
+                        <TableColumn text="Check-In" prefWidth="100"/>
+                        <TableColumn text="Check-Out" prefWidth="100"/>
+                        <TableColumn text="Guests" prefWidth="60"/>
+                        <TableColumn text="Amount" prefWidth="100"/>
+                        <TableColumn text="Status" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

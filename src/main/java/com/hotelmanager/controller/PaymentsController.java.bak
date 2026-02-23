@@ -1,0 +1,157 @@
+package com.hotelmanager.controller;
+
+import com.hotelmanager.Main;
+import com.hotelmanager.dao.PaymentDAO;
+import com.hotelmanager.model.Payment;
+import com.hotelmanager.model.PaymentStatus;
+import com.hotelmanager.util.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
+
+public class PaymentsController {
+    
+    @FXML
+    private TextField reservationIdField;
+    
+    @FXML
+    private TextField amountField;
+    
+    @FXML
+    private ComboBox<String> paymentMethodCombo;
+    
+    @FXML
+    private Label totalRevenueLabel;
+    
+    @FXML
+    private Label pendingPaymentsLabel;
+    
+    @FXML
+    private TableView<Payment> paymentsTable;
+    
+    private PaymentDAO paymentDAO;
+    private ObservableList<Payment> paymentList;
+    
+    public PaymentsController() {
+        this.paymentDAO = new PaymentDAO();
+        this.paymentList = FXCollections.observableArrayList();
+    }
+    
+    @FXML
+    public void initialize() {
+        paymentMethodCombo.setItems(FXCollections.observableArrayList(
+            "CASH", "CREDIT_CARD", "DEBIT_CARD", "BANK_TRANSFER"
+        ));
+        setupTableColumns();
+        loadPayments();
+        loadStats();
+    }
+    
+    private void setupTableColumns() {
+        paymentsTable.getColumns().clear();
+        paymentsTable.getColumns().addAll(
+            createColumn("ID", "id", 50),
+            createColumn("Reservation ID", "reservationId", 100),
+            createColumn("Amount", "amount", 100),
+            createColumn("Method", "paymentMethod", 120),
+            createColumn("Status", "paymentStatusCode", 100),
+            createColumn("Transaction ID", "transactionId", 150),
+            createColumn("Date", "paymentDate", 150)
+        );
+    }
+    
+    private TableColumn<Payment, ?> createColumn(String title, String property, int width) {
+        TableColumn<Payment, ?> col = new TableColumn<>(title);
+        col.setCellValueFactory(new PropertyValueFactory<>(property));
+        col.setPrefWidth(width);
+        return col;
+    }
+    
+    private void loadPayments() {
+        try {
+            List<Payment> payments = paymentDAO.findAll();
+            paymentList.setAll(payments);
+            paymentsTable.setItems(paymentList);
+        } catch (Exception e) {
+            Logger.error("Error loading payments", e);
+            showAlert("Error", "Failed to load payments: " + e.getMessage());
+        }
+    }
+    
+    private void loadStats() {
+        try {
+            double total = paymentDAO.getTotalRevenue();
+            totalRevenueLabel.setText("$" + String.format("%.2f", total));
+            
+            // Count pending payments
+            long pending = paymentList.stream()
+                .filter(p -> "PENDING".equals(p.getPaymentStatusCode()))
+                .count();
+            pendingPaymentsLabel.setText(String.valueOf(pending));
+        } catch (Exception e) {
+            Logger.error("Error loading stats", e);
+        }
+    }
+    
+    @FXML
+    private void recordPayment() {
+        String reservationIdStr = reservationIdField.getText().trim();
+        String amountStr = amountField.getText().trim();
+        String method = paymentMethodCombo.getValue();
+        
+        if (reservationIdStr.isEmpty() || amountStr.isEmpty() || method == null) {
+            showAlert("Validation Error", "Please fill in all fields");
+            return;
+        }
+        
+        try {
+            int reservationId = Integer.parseInt(reservationIdStr);
+            double amount = Double.parseDouble(amountStr);
+            
+            Payment payment = new Payment();
+            payment.setReservationId(reservationId);
+            payment.setAmount(amount);
+            payment.setPaymentMethod(method);
+            payment.setPaymentStatusCode(PaymentStatus.COMPLETED.getCode());
+            payment.setTransactionId("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            payment.setPaymentDate(LocalDateTime.now());
+            
+            paymentDAO.insert(payment);
+            Logger.info("Payment recorded for reservation: " + reservationId);
+            
+            clearForm();
+            loadPayments();
+            loadStats();
+            showAlert("Success", "Payment recorded successfully");
+        } catch (Exception e) {
+            Logger.error("Error recording payment", e);
+            showAlert("Error", "Failed to record payment: " + e.getMessage());
+        }
+    }
+    
+    private void clearForm() {
+        reservationIdField.clear();
+        amountField.clear();
+        paymentMethodCombo.getSelectionModel().clearSelection();
+    }
+    
+    @FXML
+    private void goToDashboard() throws IOException {
+        Main.switchScene("dashboard", 1200, 800, "Hotel Manager Pro - Dashboard", true);
+    }
+    
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+}

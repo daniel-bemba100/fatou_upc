@@ -1,0 +1,150 @@
+package com.hotelmanager.controller;
+
+import com.hotelmanager.Main;
+import com.hotelmanager.dao.CustomerDAO;
+import com.hotelmanager.model.Customer;
+import com.hotelmanager.util.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import java.io.IOException;
+import java.util.List;
+
+public class CustomersController {
+    
+    @FXML
+    private TextField firstNameField;
+    
+    @FXML
+    private TextField lastNameField;
+    
+    @FXML
+    private TextField emailField;
+    
+    @FXML
+    private TextField phoneField;
+    
+    @FXML
+    private ComboBox<String> idTypeCombo;
+    
+    @FXML
+    private TextField idNumberField;
+    
+    @FXML
+    private TextField countryField;
+    
+    @FXML
+    private TableView<Customer> customersTable;
+    
+    private CustomerDAO customerDAO;
+    private ObservableList<Customer> customerList;
+    
+    public CustomersController() {
+        this.customerDAO = new CustomerDAO();
+        this.customerList = FXCollections.observableArrayList();
+    }
+    
+    @FXML
+    public void initialize() {
+        idTypeCombo.setItems(FXCollections.observableArrayList(
+            "PASSPORT", "NATIONAL_ID", "DRIVING_LICENSE"
+        ));
+        setupTableColumns();
+        loadCustomers();
+    }
+    
+    private void setupTableColumns() {
+        customersTable.getColumns().clear();
+        customersTable.getColumns().addAll(
+            createColumn("ID", "id", 50),
+            createColumn("First Name", "firstName", 120),
+            createColumn("Last Name", "lastName", 120),
+            createColumn("Email", "email", 180),
+            createColumn("Phone", "phone", 130),
+            createColumn("ID Type", "idType", 100),
+            createColumn("ID Number", "idNumber", 120),
+            createColumn("Country", "country", 100)
+        );
+    }
+    
+    private TableColumn<Customer, ?> createColumn(String title, String property, int width) {
+        TableColumn<Customer, ?> col = new TableColumn<>(title);
+        col.setCellValueFactory(new PropertyValueFactory<>(property));
+        col.setPrefWidth(width);
+        return col;
+    }
+    
+    private void loadCustomers() {
+        try {
+            List<Customer> customers = customerDAO.findAll();
+            customerList.setAll(customers);
+            customersTable.setItems(customerList);
+        } catch (Exception e) {
+            Logger.error("Error loading customers", e);
+            showAlert("Error", "Failed to load customers: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void addCustomer() {
+        String firstName = firstNameField.getText().trim();
+        String lastName = lastNameField.getText().trim();
+        String email = emailField.getText().trim();
+        String phone = phoneField.getText().trim();
+        String idType = idTypeCombo.getValue();
+        String idNumber = idNumberField.getText().trim();
+        String country = countryField.getText().trim();
+        
+        if (firstName.isEmpty() || lastName.isEmpty() || phone.isEmpty() || 
+            idType == null || idNumber.isEmpty()) {
+            showAlert("Validation Error", "Please fill in all required fields");
+            return;
+        }
+        
+        try {
+            Customer customer = new Customer();
+            customer.setFirstName(firstName);
+            customer.setLastName(lastName);
+            customer.setEmail(email);
+            customer.setPhone(phone);
+            customer.setIdType(idType);
+            customer.setIdNumber(idNumber);
+            customer.setCountry(country);
+            
+            customerDAO.insert(customer);
+            Logger.info("Customer added: " + firstName + " " + lastName);
+            
+            clearForm();
+            loadCustomers();
+            showAlert("Success", "Customer added successfully");
+        } catch (Exception e) {
+            Logger.error("Error adding customer", e);
+            showAlert("Error", "Failed to add customer: " + e.getMessage());
+        }
+    }
+    
+    private void clearForm() {
+        firstNameField.clear();
+        lastNameField.clear();
+        emailField.clear();
+        phoneField.clear();
+        idTypeCombo.getSelectionModel().clearSelection();
+        idNumberField.clear();
+        countryField.clear();
+    }
+    
+    @FXML
+    private void goToDashboard() throws IOException {
+        Main.switchScene("dashboard", 1200, 800, "Hotel Manager Pro - Dashboard", true);
+    }
+    
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+}

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.hotelmanager.controller.CustomersController">
+    
+    <top>
+        <HBox style="-fx-background-color: #2C3E50; -fx-padding: 15 20;">
+            <Label text="Customer Management" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Back to Dashboard" styleClass="btn, btn-secondary" onAction="#goToDashboard"/>
+        </HBox>
+    </top>
+    
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+            <!-- Add Customer Form -->
+            <VBox styleClass="card" spacing="15">
+                <Label text="Add New Customer" styleClass="card-title"/>
+                <HBox spacing="15">
+                    <VBox spacing="5">
+                        <Label text="First Name"/>
+                        <TextField fx:id="firstNameField" promptText="First Name" prefWidth="120"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Last Name"/>
+                        <TextField fx:id="lastNameField" promptText="Last Name" prefWidth="120"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Email"/>
+                        <TextField fx:id="emailField" promptText="email@example.com" prefWidth="180"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Phone"/>
+                        <TextField fx:id="phoneField" promptText="+1-555-0000" prefWidth="130"/>
+                    </VBox>
+                </HBox>
+                <HBox spacing="15">
+                    <VBox spacing="5">
+                        <Label text="ID Type"/>
+                        <ComboBox fx:id="idTypeCombo" promptText="Select ID" prefWidth="130"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="ID Number"/>
+                        <TextField fx:id="idNumberField" promptText="ID Number" prefWidth="150"/>
+                    </VBox>
+                    <VBox spacing="5">
+                        <Label text="Country"/>
+                        <TextField fx:id="countryField" promptText="Country" prefWidth="120"/>
+                    </VBox>
+                    <Button text="Add Customer" styleClass="btn, btn-primary" onAction="#addCustomer" 
+                            style="-fx-alignment: CENTER_LEFT;"/>
+                </HBox>
+            </VBox>
+            
+            <!-- Customer List -->
+            <VBox VBox.vgrow="ALWAYS">
+                <Label text="Customers" styleClass="card-title"/>
+                <TableView fx:id="customersTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn text="ID" prefWidth="50"/>
+                        <TableColumn text="Name" prefWidth="150"/>
+                        <TableColumn text="Email" prefWidth="180"/>
+                        <TableColumn text="Phone" prefWidth="130"/>
+                        <TableColumn text="ID Type" prefWidth="100"/>
+                        <TableColumn text="ID Number" prefWidth="120"/>
+                        <TableColumn text="Country" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>
